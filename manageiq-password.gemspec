@@ -1,16 +1,30 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "miq_password/version"
+require "manageiq/password/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "miq_password"
-  spec.version       = MiqPassword::VERSION
-  spec.authors       = ["Adam Grare"]
-  spec.email         = ["agrare@redhat.com"]
+  spec.name          = "manageiq-password"
+  spec.version       = ManageIQ::Password::VERSION
+  spec.authors       = [
+    "Jason Frey",
+    "Oleg Barenboim",
+    "Joe Rafaniello",
+    "Keenan Brock",
+    "Brandon Dunne",
+    "Adam Grare"
+  ]
+  spec.email         = [
+    "jfrey@redhat.com",
+    "obarenbo@redhat.com",
+    "jrafanie@redhat.com",
+    "kbrock@redhat.com",
+    "bdunne@redhat.com",
+    "agrare@redhat.com"
+  ]
 
   spec.summary       = %q{A simple encryption util for storing passwords in a database.}
-  spec.homepage      = "https://github.com/ManageIQ/miq_password"
+  spec.homepage      = "https://github.com/ManageIQ/manageiq-password"
   spec.license       = "Apache-2.0"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|

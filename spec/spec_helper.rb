@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "miq_password"
+require "manageiq/password"
 
 Dir[File.expand_path(File.join(__dir__, 'support/**/*.rb'))].each { |f| require f }
 
