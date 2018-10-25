@@ -1,12 +1,13 @@
-# encoding: utf-8
-
-require 'util/miq-password'
 require 'tempfile'
 
-describe MiqPassword do
+RSpec.describe MiqPassword do
+  it "has a version number" do
+    expect(MiqPassword::VERSION).not_to be nil
+  end
+
   before do
     @old_key_root = MiqPassword.key_root
-    MiqPassword.key_root = ManageIQ::Gems::Pending.root.join("spec/support")
+    MiqPassword.key_root = File.join(__dir__, "support")
   end
 
   after do

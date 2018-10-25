@@ -1,3 +1,5 @@
+require "miq_password/version"
+
 require 'openssl'
 require 'base64'
 require 'yaml'
