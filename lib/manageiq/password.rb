@@ -267,5 +267,5 @@ module ManageIQ
   end
 end
 
-# Backward compatibility for the class that used to be used by Rails.
-DB_PASSWORD = ManageIQ::Password
+# Backward compatibility previous class names
+DB_PASSWORD = MiqPassword = ManageIQ::Password

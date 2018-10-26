@@ -99,6 +99,10 @@ RSpec.describe ManageIQ::Password do
         enc = erberize(enc_v0, 'DB_PASSWORD')
         expect(ManageIQ::Password.try_encrypt(enc)).to eq(enc)
       end
+      it("#try_encrypt MiqPassword")     do
+        enc = erberize(enc_v0, 'MiqPassword')
+        expect(ManageIQ::Password.try_encrypt(enc)).to eq(enc)
+      end
       it("#try_encrypt (encrypted v1)")  { expect(ManageIQ::Password.try_encrypt(enc_v1)).to eq(enc_v1) }
       it("#try_encrypt (encrypted v2)")  { expect(ManageIQ::Password.try_encrypt(enc_v2)).to eq(enc_v2) }
 
@@ -107,6 +111,7 @@ RSpec.describe ManageIQ::Password do
       it("#try_decrypt v1 erb")          { expect(ManageIQ::Password.try_decrypt(erberize(enc_v1))).to be_decrypted(pass) }
       it("#try_decrypt erb")             { expect(ManageIQ::Password.try_decrypt(erberize(enc_v0))).to be_decrypted(pass) }
       it("#try_decrypt DB_PASSWORD")     { expect(ManageIQ::Password.try_decrypt(erberize(enc_v0, "DB_PASSWORD"))).to be_decrypted(pass) }
+      it("#try_decrypt MiqPassword")     { expect(ManageIQ::Password.try_decrypt(erberize(enc_v0, "MiqPassword"))).to be_decrypted(pass) }
       it("#try_decrypt (non-encrypted)") { expect(ManageIQ::Password.try_decrypt(pass)).to             eq(pass) }
 
       it("#split[ver]")            { expect(ManageIQ::Password.split(enc_v2).first).to           eq("2") }
