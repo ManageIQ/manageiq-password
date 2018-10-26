@@ -1,4 +1,10 @@
 require "bundler/setup"
+
+if ENV['CI']
+  require 'simplecov'
+  SimpleCov.start
+end
+
 require "manageiq/password"
 
 Dir[File.expand_path(File.join(__dir__, 'support/**/*.rb'))].each { |f| require f }
