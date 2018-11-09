@@ -175,7 +175,7 @@ RSpec.describe ManageIQ::Password do
     end
 
     it "should fail on recrypt bad password" do
-      expect { ManageIQ::Password.new.recrypt("v2:{55555}") }.to raise_error(ManageIQ::Password::PasswordError)
+      expect { ManageIQ::Password.new.recrypt("v2:{55555}") }.to raise_error(ManageIQ::Password::MiqPasswordError)
     end
 
     it "should decrypt passwords with newlines" do
@@ -189,7 +189,7 @@ RSpec.describe ManageIQ::Password do
     it "should report decent error when decryption with missing an encryption key" do
       expect do
         described_class.decrypt("v1:{KSOqhNiOWJbR0lz7v6PTJg==}")
-      end.to raise_error(ManageIQ::Password::PasswordError, /can not decrypt.*v1_key/)
+      end.to raise_error(ManageIQ::Password::MiqPasswordError, /can not decrypt.*v1_key/)
     end
   end
 
