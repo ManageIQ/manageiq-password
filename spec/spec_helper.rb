@@ -5,7 +5,7 @@ if ENV['CI']
   SimpleCov.start
 end
 
-require "manageiq/password"
+require "manageiq-password"
 
 Dir[File.expand_path(File.join(__dir__, 'support/**/*.rb'))].each { |f| require f }
 
