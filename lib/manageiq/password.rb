@@ -6,7 +6,7 @@ require 'yaml'
 
 module ManageIQ
   class Password
-    class MiqPasswordError < StandardError; end
+    class PasswordError < StandardError; end
 
     CURRENT_VERSION = "2"
     REGEXP = /v([0-2]):\{([^}]*)\}/
@@ -40,7 +40,7 @@ module ManageIQ
         begin
           self.class.keys[key_name].decrypt64(enc).force_encoding('UTF-8')
         rescue
-          raise MiqPasswordError, "can not decrypt v#{ver}_key encrypted string"
+          raise PasswordError, "can not decrypt v#{ver}_key encrypted string"
         end
       end
     end
