@@ -63,7 +63,7 @@ RSpec.describe ManageIQ::Password::PasswordMixin do
   end
 
   it ".encrypted_columns" do
-    expect(fake_ar_model.encrypted_columns).to match_array(%w[password password_encrypted])
+    expect(fake_ar_model.encrypted_columns).to match_array(%w[password])
   end
 
   it "underlying columns are stored encrypted" do
