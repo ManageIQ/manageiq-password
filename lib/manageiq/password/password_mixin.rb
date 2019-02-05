@@ -17,7 +17,6 @@ module ManageIQ
           #   password_encrypted= : Set the password in cryptext
 
           encrypted_columns << column.to_s
-          encrypted_columns << "#{column}_encrypted"
 
           mod = generated_methods_for_password_mixin
 
