@@ -12,6 +12,7 @@ RSpec::Matchers.define :be_encrypted do |expected|
   #   result in false positives. It doesn't make sense to check a decrypted value
   #   anyway, since we are claiming that we don't expect it to be encrypted.
   match_when_negated do |actual|
+    raise ArgumentError, "cannot pass `expected` on a negated be_encrypted expectation" if expected
     !ManageIQ::Password.encrypted?(actual)
   end
 

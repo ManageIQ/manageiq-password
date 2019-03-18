@@ -39,13 +39,12 @@ RSpec.describe "RSpec::Matchers" do
       end.to raise_error(RSpec::Expectations::ExpectationNotMetError)
     end
 
-    it("on encrypted with check") { expect(encrypted).to     be_encrypted(decrypted) }
-    it("on decrypted with check") { expect(decrypted).to_not be_encrypted("no matter") }
+    it("on encrypted with check") { expect(encrypted).to be_encrypted(decrypted) }
 
     it("fails on not encrypted with check") do
       expect do
-        expect(encrypted).to_not be_encrypted("no matter")
-      end.to raise_error(RSpec::Expectations::ExpectationNotMetError)
+        expect(encrypted).to_not be_encrypted("invalid argument")
+      end.to raise_error(ArgumentError)
     end
 
     it("fails on encrypted with check that fails") do
