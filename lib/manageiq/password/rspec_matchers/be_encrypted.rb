@@ -1,3 +1,5 @@
+require "manageiq-password"
+
 RSpec::Matchers.define :be_encrypted do |expected|
   match do |actual|
     ManageIQ::Password.encrypted?(actual) && (

@@ -6,6 +6,7 @@ if ENV['CI']
 end
 
 require "manageiq-password"
+require "manageiq/password/rspec_matchers"
 
 Dir[File.expand_path(File.join(__dir__, 'support/**/*.rb'))].each { |f| require f }
 

@@ -1,5 +1,3 @@
-require "manageiq/password/rspec_matchers"
-
 RSpec.describe "RSpec::Matchers" do
   let(:decrypted)    { "p4$$w0rd" }
   let(:encrypted)    { ManageIQ::Password.encrypt(decrypted) }

@@ -1,3 +1,5 @@
+require "manageiq-password"
+
 RSpec::Matchers.define :be_encrypted_version do |expected|
   match do |actual|
     ManageIQ::Password.split(actual).first == expected.to_s
