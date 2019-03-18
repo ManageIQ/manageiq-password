@@ -1,15 +1,6 @@
 require 'manageiq/password/password_mixin'
 
 RSpec.describe ManageIQ::Password::PasswordMixin do
-  before do
-    @old_key_root = ManageIQ::Password.key_root
-    ManageIQ::Password.key_root = File.join(__dir__, "support")
-  end
-
-  after do
-    ManageIQ::Password.key_root = @old_key_root
-  end
-
   let(:fake_ar_base) do
     Class.new do
       attr_reader :attributes

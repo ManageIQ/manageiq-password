@@ -19,4 +19,13 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  config.before do
+    @old_key_root = ManageIQ::Password.key_root
+    ManageIQ::Password.key_root = File.join(__dir__, "support")
+  end
+
+  config.after do
+    ManageIQ::Password.key_root = @old_key_root
+  end
 end
