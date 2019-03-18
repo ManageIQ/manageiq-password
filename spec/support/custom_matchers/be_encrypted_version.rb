@@ -1,8 +1,3 @@
-
-# NOTE: If this fails, this may be due to special characters in the password, or passing in an encrypted password
-# possible solutions:
-#   field.should be_encrypted_version(1)
-
 RSpec::Matchers.define :be_encrypted_version do |expected|
   match do |actual|
     ManageIQ::Password.split(actual).first == expected.to_s

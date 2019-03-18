@@ -1,5 +1,3 @@
-# See also be_decrypted
-# decryption doesn't always join unicode characters together correctly. this should not cause an issue
 RSpec::Matchers.define :be_encrypted do |expected|
   match do |actual|
     ManageIQ::Password.encrypted?(actual) && (
@@ -8,12 +6,19 @@ RSpec::Matchers.define :be_encrypted do |expected|
     )
   end
 
+  # On negation, we don't want to check the expected at all, otherwise it can
+  #   result in false positives. It doesn't make sense to check a decrypted value
+  #   anyway, since we are claiming that we don't expect it to be encrypted.
+  match_when_negated do |actual|
+    !ManageIQ::Password.encrypted?(actual)
+  end
+
   failure_message do |actual|
-    "expected: #{actual.inspect} to be encrypted#{" and decrypt to #{expected}" if expected}"
+    "expected: #{actual.inspect} to be encrypted#{" and decrypt to #{expected.inspect}" if expected}"
   end
 
   failure_message_when_negated do |actual|
-    "expected: #{actual.inspect} not to be encrypted#{" and decrypt to #{expected}" if expected}"
+    "expected: #{actual.inspect} not to be encrypted"
   end
 
   description do
