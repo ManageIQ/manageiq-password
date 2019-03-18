@@ -5,16 +5,6 @@ RSpec.describe ManageIQ::Password do
     expect(ManageIQ::Password::VERSION).not_to be nil
   end
 
-  before do
-    @old_key_root = ManageIQ::Password.key_root
-    ManageIQ::Password.key_root = File.join(__dir__, "support")
-  end
-
-  after do
-    # clear legacy keys and reset key_root changes (from specs or before block)
-    ManageIQ::Password.key_root = @old_key_root
-  end
-
   MIQ_PASSWORD_CASES = [
     [
       "test",

@@ -6,6 +6,7 @@ if ENV['CI']
 end
 
 require "manageiq-password"
+require "manageiq/password/rspec_matchers"
 
 Dir[File.expand_path(File.join(__dir__, 'support/**/*.rb'))].each { |f| require f }
 
@@ -18,5 +19,14 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.before do
+    @old_key_root = ManageIQ::Password.key_root
+    ManageIQ::Password.key_root = File.join(__dir__, "support")
+  end
+
+  config.after do
+    ManageIQ::Password.key_root = @old_key_root
   end
 end
