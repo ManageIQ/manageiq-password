@@ -55,7 +55,7 @@ RSpec.describe "RSpec::Matchers" do
 
     it("fails on not decrypted with check") do
       expect do
-        expect(decrypted).to be_encrypted("no matter")
+        expect(decrypted).to be_encrypted(decrypted)
       end.to raise_error(RSpec::Expectations::ExpectationNotMetError)
     end
   end
