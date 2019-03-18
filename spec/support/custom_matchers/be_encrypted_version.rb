@@ -16,8 +16,4 @@ RSpec::Matchers.define :be_encrypted_version do |expected|
   description do
     "expect to be encrypted with a particular version of miq password (e.g.: 2)"
   end
-
-  def utf8_to_ascii_bytestring(str)
-    str.bytes.map(&:chr).join
-  end
 end
