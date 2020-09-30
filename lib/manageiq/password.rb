@@ -9,9 +9,8 @@ module ManageIQ
   class Password
     class PasswordError < StandardError; end
 
-    CURRENT_VERSION = "2"
-    REGEXP = /v([0-2]):\{([^}]*)\}/
-    REGEXP_PASSWORD = /v[0-2](:\{[^}]*\}|%3A%7B.*?%7D)/ # for "v2:{...}" or its URL encoded string
+    REGEXP = /v2:\{([^}]*)\}/
+    REGEXP_PASSWORD = /v2(:\{[^}]*\}|%3A%7B.*?%7D)/ # for "v2:{...}" or its URL encoded string
     REGEXP_START_LINE = /^#{REGEXP}/
     MASK = '********'.freeze
 
@@ -23,58 +22,47 @@ module ManageIQ
       @encStr = encrypt(str)
     end
 
-    def encrypt(str, ver = "v2", key = self.class.keys[ver])
-      value = key.encrypt64(str).delete("\n") unless str.nil? || str.empty?
-      "#{ver}:{#{value}}"
+    def encrypt(str, key = self.class.key)
+      return str if str.nil?
+
+      enc = key.encrypt64(str).delete("\n") unless str.empty?
+      self.class.wrap(enc)
     end
 
-    def decrypt(str, legacy = false)
-      if str.nil? || str.empty?
-        str
-      else
-        ver, enc = self.class.split(str)
-        return "" if enc.empty?
+    def decrypt(str, key = self.class.key)
+      enc = self.class.unwrap(str)
+      return enc if enc.nil? || enc.empty?
 
-        ver ||= "0" # if we don't know what it is, just assume legacy
-        key_name = (ver == "2" && legacy) ? "alt" : "v#{ver}"
-
-        begin
-          self.class.keys[key_name].decrypt64(enc).force_encoding('UTF-8')
-        rescue
-          raise PasswordError, "can not decrypt v#{ver}_key encrypted string"
-        end
+      begin
+        key.decrypt64(enc).force_encoding('UTF-8')
+      rescue
+        raise PasswordError, "cannot decrypt encrypted string"
       end
     end
 
     def recrypt(str)
-      return str if str.nil? || str.empty?
-      decrypted_str =
-        begin
-          # if a legacy v2 key exists, give decrypt the option to use that
-          decrypt(str, self.class.keys["alt"])
-        rescue
-          source_version = self.class.split(str).first || "0"
-          if source_version == "0" # it probably wasn't encrypted
-            return str
-          elsif source_version == "2" # tried with an alt key, see if regular v2 key works
-            decrypt(str)
-          else
-            raise
-          end
-        end
+      return str if str.nil?
+
+      decrypted_str   = decrypt(str, self.class.legacy_keys["alt"]) rescue nil
+      decrypted_str ||= decrypt(str)
       encrypt(decrypted_str)
     end
 
-    def self.encrypt(str)
-      new.encrypt(str) if str
+    def self.encrypt(*args)
+      new.encrypt(*args)
     end
 
-    def self.decrypt(str)
-      new.decrypt(str)
+    def self.decrypt(*args)
+      new.decrypt(*args)
+    end
+
+    def self.recrypt(*args)
+      new.recrypt(*args)
     end
 
     def self.encrypted?(str)
-      !!split(str).first
+      return false if str.nil? || str.empty?
+      !!unwrap(str)
     end
 
     def self.md5crypt(str)
@@ -102,23 +90,12 @@ module ManageIQ
       encrypted?(str) ? str : encrypt(str)
     end
 
-    # @returns [ver, enc]
-    def self.split(encrypted_str)
-      if encrypted_str.nil? || encrypted_str.empty?
-        [nil, encrypted_str]
-      else
-        if encrypted_str =~ REGEXP_START_LINE
-          [$1, $2]
-        elsif legacy = extract_erb_encrypted_value(encrypted_str)
-          if legacy =~ REGEXP_START_LINE
-            [$1, $2]
-          else
-            ["0", legacy]
-          end
-        else
-          [nil, encrypted_str]
-        end
-      end
+    # Deprecated. Only here for backward compatibility
+    def self.split(str)
+      return [nil, str] if str.nil? || str.empty?
+
+      enc = unwrap(str)
+      enc ? ["2", enc] : [nil, str]
     end
 
     def self.key_root
@@ -131,23 +108,16 @@ module ManageIQ
     end
 
     def self.clear_keys
-      @@all_keys = nil
+      @@key = nil
+      @@legacy_keys = nil
     end
 
-    def self.all_keys
-      keys.values
+    def self.key=(key)
+      @@key = key
     end
 
-    def self.keys
-      @@all_keys ||= {"v2" => load_v2_key}.delete_if { |_n, v| v.nil? }
-    end
-
-    def self.v2_key
-      keys["v2"]
-    end
-
-    def self.load_v2_key
-      load_key_file("v2_key") || begin
+    def self.key
+      @@key ||= load_key_file("v2_key") || begin
         key_file = File.expand_path("v2_key", key_root)
         msg = <<-EOS
   #{key_file} doesn't exist!
@@ -159,18 +129,29 @@ module ManageIQ
   passwords in your database.
   EOS
         Kernel.warn msg
+        nil
       end
     end
 
     def self.add_legacy_key(filename, type = "alt")
-      key = load_key_file(filename, type != :v0)
-      keys[type.to_s] = key if key
+      key = load_key_file(filename)
+      self.legacy_keys[type.to_s] = key if key
       key
     end
 
-    # used by tests only
-    def self.v2_key=(key)
-      (@@all_keys ||= {})["v2"] = key
+    # Deprecated. Only here for backward compatibility
+    def self.all_keys
+      keys.values
+    end
+
+    # Deprecated. Only here for backward compatibility
+    def self.keys
+      legacy_keys.merge("v2" => key).delete_if { |_n, v| v.nil? }
+    end
+
+    # Deprecated. Only here for backward compatibility
+    def self.v2_key(key)
+      self.key = key
     end
 
     def self.generate_symmetric(filename = nil)
@@ -179,26 +160,36 @@ module ManageIQ
 
     protected
 
+    def self.wrap(encrypted_str)
+      "v2:{#{encrypted_str}}"
+    end
+
+    def self.unwrap(str)
+      _unwrap(str) || _unwrap(extract_erb_encrypted_value(str))
+    end
+
+    private_class_method def self._unwrap(str)
+      return str if str.nil? || str.empty?
+      str.match(REGEXP_START_LINE)&.public_send(:[], 1)
+    end
+
+    def self.legacy_keys
+      @@legacy_keys ||= {}
+    end
+
     def self.store_key_file(filename, key)
       File.write(filename, key.to_h.to_yaml)
     end
 
-    def self.load_key_file(filename, recent = true)
+    def self.load_key_file(filename)
       return filename if filename.respond_to?(:decrypt64)
 
       # if it is an absolute path, or relative to pwd, leave as is
       # otherwise, look in key root for it
       filename = File.expand_path(filename, key_root) unless File.exist?(filename)
-      if !File.exist?(filename)
-        nil
-      elsif recent
-        params = YAML.load_file(filename)
-        Key.new(*params.values_at(:algorithm, :key, :iv))
-      else
-        params = YAML.load_file(filename)
-        algorithm, key, iv = params.values_at(:algorithm, :key, :iv)
-        Key.new(algorithm, key && Base64.encode64(key), iv && Base64.encode64(iv))
-      end
+      return nil unless File.exist?(filename)
+
+      Key.new(*YAML.load_file(filename).values_at(:algorithm, :key, :iv))
     end
 
     def self.extract_erb_encrypted_value(value)
