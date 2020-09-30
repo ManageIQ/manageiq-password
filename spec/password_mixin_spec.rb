@@ -1,5 +1,3 @@
-require 'manageiq/password/password_mixin'
-
 RSpec.describe ManageIQ::Password::PasswordMixin do
   let(:fake_ar_base) do
     Class.new do

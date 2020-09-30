@@ -1,5 +1,3 @@
-require "manageiq-password"
-
 module ManageIQ
   class Password
     module PasswordMixin

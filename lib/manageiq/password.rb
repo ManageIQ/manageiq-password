@@ -1,4 +1,5 @@
 require "manageiq/password/version"
+require "manageiq/password/password_mixin"
 
 require 'openssl'
 require 'base64'
