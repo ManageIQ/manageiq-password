@@ -40,10 +40,10 @@ module ManageIQ
       end
     end
 
-    def recrypt(str)
+    def recrypt(str, prior_key = nil)
       return str if str.nil?
 
-      decrypted_str   = decrypt(str, self.class.legacy_keys["alt"]) rescue nil
+      decrypted_str   = decrypt(str, prior_key) if prior_key rescue nil
       decrypted_str ||= decrypt(str)
       encrypt(decrypted_str)
     end
@@ -95,13 +95,8 @@ module ManageIQ
     end
 
     def self.key_root=(key_root)
-      clear_keys
-      @@key_root = key_root
-    end
-
-    def self.clear_keys
       @@key = nil
-      @@legacy_keys = nil
+      @@key_root = key_root
     end
 
     def self.key=(key)
@@ -125,22 +120,6 @@ module ManageIQ
       end
     end
 
-    def self.add_legacy_key(filename, type = "alt")
-      key = load_key_file(filename)
-      self.legacy_keys[type.to_s] = key if key
-      key
-    end
-
-    # Deprecated. Only here for backward compatibility
-    def self.all_keys
-      keys.values
-    end
-
-    # Deprecated. Only here for backward compatibility
-    def self.keys
-      legacy_keys.merge("v2" => key).delete_if { |_n, v| v.nil? }
-    end
-
     def self.generate_symmetric(filename = nil)
       Key.new.tap { |key| store_key_file(filename, key) if filename }
     end
@@ -158,10 +137,6 @@ module ManageIQ
     private_class_method def self._unwrap(str)
       return str if str.nil? || str.empty?
       str.match(REGEXP_START_LINE)&.public_send(:[], 1)
-    end
-
-    def self.legacy_keys
-      @@legacy_keys ||= {}
     end
 
     def self.store_key_file(filename, key)
