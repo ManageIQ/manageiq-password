@@ -63,9 +63,6 @@ RSpec.describe ManageIQ::Password do
       it(".recrypt") { expect(ManageIQ::Password.recrypt(enc)).to     eq(enc) }
       it("#recrypt") { expect(ManageIQ::Password.new.recrypt(enc)).to eq(enc) }
 
-      it(".split")           { expect(ManageIQ::Password.split(enc)).to  eq ["2", enc[4..-2]] }
-      it(".split decrypted") { expect(ManageIQ::Password.split(pass)).to eq [nil, pass] }
-
       %w[DB_PASSWORD MiqPassword ManageIQ::Password].each do |pass_method|
         enc_erb = "<%= #{pass_method}.decrypt(\"#{enc}\") %>"
 
@@ -77,8 +74,6 @@ RSpec.describe ManageIQ::Password do
 
           it(".recrypt") { expect(ManageIQ::Password.recrypt(enc_erb)).to     eq(enc) }
           it("#recrypt") { expect(ManageIQ::Password.new.recrypt(enc_erb)).to eq(enc) }
-
-          it(".split") { expect(ManageIQ::Password.split(enc_erb)).to eq ["2", enc[4..-2]] }
         end
       end
     end
@@ -137,11 +132,6 @@ RSpec.describe ManageIQ::Password do
       expect(ManageIQ::Password.try_encrypt(nil)).to     be_nil
       expect(ManageIQ::Password.try_encrypt("")).to      eq("v2:{}")
       expect(ManageIQ::Password.try_encrypt("v2:{}")).to eq("v2:{}")
-    end
-
-    it ".split" do
-      expect(ManageIQ::Password.split(nil)).to eq [nil, nil]
-      expect(ManageIQ::Password.split("")).to  eq [nil, ""]
     end
   end
 
