@@ -90,14 +90,6 @@ module ManageIQ
       encrypted?(str) ? str : encrypt(str)
     end
 
-    # Deprecated. Only here for backward compatibility
-    def self.split(str)
-      return [nil, str] if str.nil? || str.empty?
-
-      enc = unwrap(str)
-      enc ? ["2", enc] : [nil, str]
-    end
-
     def self.key_root
       @@key_root ||= ENV["KEY_ROOT"]
     end
@@ -147,11 +139,6 @@ module ManageIQ
     # Deprecated. Only here for backward compatibility
     def self.keys
       legacy_keys.merge("v2" => key).delete_if { |_n, v| v.nil? }
-    end
-
-    # Deprecated. Only here for backward compatibility
-    def self.v2_key(key)
-      self.key = key
     end
 
     def self.generate_symmetric(filename = nil)
