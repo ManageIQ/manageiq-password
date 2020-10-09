@@ -138,18 +138,14 @@ RSpec.describe ManageIQ::Password do
   describe ".recrypt" do
     let(:prior_key) { ManageIQ::Password::Key.new("aes-256-cbc", "JZjTdiuOzWlTHUkBZSGj9BmWEoswxvImWuwD/xN87s0=") }
 
-    before do
-      ManageIQ::Password.add_legacy_key(prior_key)
-    end
-
     it "with password encrypted with a prior key" do
       enc = ManageIQ::Password.encrypt("password", prior_key)
-      expect(ManageIQ::Password.recrypt(enc)).to be_encrypted("password")
+      expect(ManageIQ::Password.recrypt(enc, prior_key)).to be_encrypted("password")
     end
 
     it "with password encrypted with the current key but given a prior key" do
       enc = ManageIQ::Password.encrypt("password")
-      expect(ManageIQ::Password.recrypt(enc)).to be_encrypted("password")
+      expect(ManageIQ::Password.recrypt(enc, prior_key)).to be_encrypted("password")
     end
 
     it "fails on a bad encrypted key" do
@@ -209,12 +205,10 @@ RSpec.describe ManageIQ::Password do
 
     it "clears existing keys" do
       key = ManageIQ::Password.key
-      ManageIQ::Password.add_legacy_key(ManageIQ::Password::Key.new)
       ManageIQ::Password.key_root = nil
 
       expect(Kernel).to receive(:warn).with(/v2_key doesn't exist/)
-      expect(ManageIQ::Password.key).to         be_nil
-      expect(ManageIQ::Password.legacy_keys).to eq({})
+      expect(ManageIQ::Password.key).to be_nil
     end
   end
 
@@ -237,73 +231,5 @@ RSpec.describe ManageIQ::Password do
 
     ManageIQ::Password.key = new_key
     expect(ManageIQ::Password.key).to eq new_key
-  end
-
-  describe ".clear_keys" do
-    it "removes legacy keys from all_keys" do
-      key = ManageIQ::Password.key
-      legacy_key = ManageIQ::Password.add_legacy_key(ManageIQ::Password::Key.new)
-
-      expect(ManageIQ::Password.all_keys).to match_array([key, legacy_key])
-
-      ManageIQ::Password.clear_keys
-
-      key = ManageIQ::Password.key
-      expect(ManageIQ::Password.all_keys).to match_array([key])
-    end
-  end
-
-  describe ".add_legacy_key" do
-    let(:legacy_key) { ManageIQ::Password::Key.new }
-
-    it "ignores bad key filename" do
-      expect(ManageIQ::Password.all_keys.size).to eq(1)
-      ManageIQ::Password.add_legacy_key("some_bogus_name")
-      expect(ManageIQ::Password.all_keys.size).to eq(1)
-    end
-
-    it "supports raw key" do
-      expect(ManageIQ::Password.all_keys.size).to eq(1)
-      ManageIQ::Password.add_legacy_key(legacy_key)
-      expect(ManageIQ::Password.all_keys.size).to eq(2)
-    end
-
-    it "supports absolute path" do
-      with_key do |dir, filename|
-        ManageIQ::Password.add_legacy_key("#{dir}/#{filename}")
-      end
-      expect(ManageIQ::Password.all_keys.size).to eq(2)
-    end
-
-    it "supports relative path" do
-      with_key do |dir, filename|
-        Dir.chdir dir do
-          expect(ManageIQ::Password.all_keys.size).to eq(1)
-          ManageIQ::Password.add_legacy_key(filename)
-          expect(ManageIQ::Password.all_keys.size).to eq(2)
-        end
-      end
-    end
-
-    it "supports root_key path (also warns if v2 key not found)" do
-      with_key do |dir, filename|
-        ManageIQ::Password.key_root = dir
-        expect(Kernel).to receive(:warn).with(/doesn't exist/) # NOTE: no v2_key in this key_root
-        expect(ManageIQ::Password.all_keys.size).to eq(0)
-        ManageIQ::Password.add_legacy_key(filename)
-        expect(Kernel).to receive(:warn).with(/doesn't exist/) # NOTE: no v2_key in this key_root
-        expect(ManageIQ::Password.all_keys.size).to eq(1)
-      end
-    end
-  end
-
-  private
-
-  def with_key
-    require "tempfile"
-    Dir.mktmpdir('test-key-root') do |d|
-      ManageIQ::Password.generate_symmetric("#{d}/my-key")
-      yield d, "my-key"
-    end
   end
 end
