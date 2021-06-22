@@ -44,6 +44,7 @@ module ManageIQ
       return str if str.nil?
 
       decrypted_str   = decrypt(str, prior_key) if prior_key rescue nil
+      decrypted_str   = nil if decrypted_str && !decrypted_str.valid_encoding?
       decrypted_str ||= decrypt(str)
       encrypt(decrypted_str)
     end
