@@ -140,7 +140,7 @@ module ManageIQ
     end
 
     def self.store_key_file(filename, key)
-      File.write(filename, key.to_h.to_yaml)
+      File.write(filename, key.to_h.to_yaml, :perm => 0440)
     end
 
     def self.load_key_file(filename)
