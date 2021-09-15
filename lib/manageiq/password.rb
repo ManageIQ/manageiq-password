@@ -161,6 +161,8 @@ module ManageIQ
     class Key
       GENERATED_KEY_SIZE = 32
 
+      attr_reader :algorithm, :iv, :key, :raw_iv, :raw_key
+
       def self.generate_key(password = nil, salt = nil)
         password ||= OpenSSL::Random.random_bytes(GENERATED_KEY_SIZE)
         Base64.strict_encode64(Digest::SHA256.digest("#{password}#{salt}")[0, GENERATED_KEY_SIZE])
