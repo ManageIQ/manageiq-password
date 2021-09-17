@@ -55,9 +55,9 @@ str ||= ARGF.read.strip
 
 case options[:mode]
 when "decrypt" then
-  puts ManageIQ::Password.decrypt(str)
+  print ManageIQ::Password.decrypt(str)
 when "encrypt"  then
-  puts ManageIQ::Password.encrypt(str)
+  print ManageIQ::Password.encrypt(str)
 else
 	warn "ERROR: Invalid mode: #{options[:mode]}"
 	exit 1
