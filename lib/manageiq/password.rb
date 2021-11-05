@@ -129,29 +129,27 @@ module ManageIQ
       Key.new.tap { |key| store_key_file(filename, key) if filename }
     end
 
-    private
-
-    def self.wrap(encrypted_str)
+    private_class_method def self.wrap(encrypted_str)
       "v2:{#{encrypted_str}}"
     end
 
-    def self.unwrap(str)
+    private_class_method def self.unwrap(str)
       return str if str.nil? || str.empty?
 
       str.match(REGEXP_START_LINE)&.public_send(:[], 1)
     end
 
-    def self.wrapped?(str)
+    private_class_method def self.wrapped?(str)
       return false if str.nil? || str.empty?
 
       str.match?(REGEXP_START_LINE)
     end
 
-    def self.store_key_file(filename, key)
+    private_class_method def self.store_key_file(filename, key)
       File.write(filename, key.to_h.to_yaml, :perm => 0440)
     end
 
-    def self.load_key_file(filename)
+    private_class_method def self.load_key_file(filename)
       return filename if filename.respond_to?(:decrypt64)
 
       # if it is an absolute path, or relative to pwd, leave as is
@@ -162,7 +160,7 @@ module ManageIQ
       Key.new(*YAML.load_file(filename).values_at(:algorithm, :key, :iv))
     end
 
-    def self.remove_erb(str)
+    private_class_method def self.remove_erb(str)
       return str if str.nil? || str.empty? || !str.start_with?("<%=")
 
       match = str.match(/\A<%= (?:MiqPassword|DB_PASSWORD|ManageIQ::Password)\.decrypt\(['"](.+?)['"]\) %>\Z/m)
