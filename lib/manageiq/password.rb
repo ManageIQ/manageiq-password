@@ -30,9 +30,10 @@ module ManageIQ
     end
 
     def decrypt(str, key = self.class.key)
+      str = self.class.remove_erb(str)
       return str if str.nil? || str.empty?
 
-      raise PasswordError, "cannot decrypt plaintext string" unless self.class.encrypted?(str)
+      raise PasswordError, "cannot decrypt plaintext string" unless self.class.wrapped?(str)
 
       enc = self.class.unwrap(str)
       return enc if enc.nil? || enc.empty?
@@ -137,7 +138,7 @@ module ManageIQ
     def self.unwrap(str)
       return str if str.nil? || str.empty?
 
-      remove_erb(str).match(REGEXP_START_LINE)&.public_send(:[], 1)
+      str.match(REGEXP_START_LINE)&.public_send(:[], 1)
     end
 
     def self.wrapped?(str)
