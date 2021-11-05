@@ -30,6 +30,10 @@ module ManageIQ
     end
 
     def decrypt(str, key = self.class.key)
+      return str if str.nil? || str.empty?
+
+      raise PasswordError, "cannot decrypt plaintext string" unless self.class.encrypted?(str)
+
       enc = self.class.unwrap(str)
       return enc if enc.nil? || enc.empty?
 

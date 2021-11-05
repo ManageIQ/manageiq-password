@@ -39,6 +39,14 @@ RSpec.describe ManageIQ::Password do
       # Turkish characters known for encoding issues
       "şŞ",
       "v2:{IIdPQA3FbwJv/JmGapatwg==}",
+    ], [
+      # Old v1 keys are now considered like plaintext
+      "v1:{Wv/+DC0XBqnIbRCIAI+CSQ==}",
+      "v2:{WNOvFRtE80WHrw8f04SDhE4/LQJjgBcsMOjcrHlZB3s=}",
+    ], [
+      # Old v0 keys are now considered like plaintext
+      "yaLmATw79aaeXOiu/297Hw==",
+      "v2:{+4V6MIdimJtprWnViWbBoZYePTvPXtLnhOmKn+j0AxY=}",
     ]
   ]
 
@@ -50,6 +58,9 @@ RSpec.describe ManageIQ::Password do
       it(".decrypt") { expect(ManageIQ::Password.decrypt(enc)).to     be_decrypted(pass) }
       it("#decrypt") { expect(ManageIQ::Password.new.decrypt(enc)).to be_decrypted(pass) }
 
+      it(".decrypt plaintext") { expect { ManageIQ::Password.decrypt(pass) }.to     raise_error ManageIQ::Password::PasswordError }
+      it("#decrypt plaintext") { expect { ManageIQ::Password.new.decrypt(pass) }.to raise_error ManageIQ::Password::PasswordError }
+
       it(".encrypt(.decrypt)") { expect(ManageIQ::Password.decrypt(ManageIQ::Password.encrypt(pass))).to         be_decrypted(pass) }
       it(".encStr/.decrypt")   { expect(ManageIQ::Password.decrypt(ManageIQ::Password.new(pass).encStr)).to      be_decrypted(pass) }
       it("#encrypt(#decrypt)") { expect(ManageIQ::Password.new.decrypt(ManageIQ::Password.new.encrypt(pass))).to be_decrypted(pass) }
@@ -58,17 +69,21 @@ RSpec.describe ManageIQ::Password do
       it(".try_encrypt encrypted") { expect(ManageIQ::Password.try_encrypt(enc)).to  eq(enc) }
 
       it(".try_decrypt")           { expect(ManageIQ::Password.try_decrypt(enc)).to  be_decrypted(pass) }
-      it(".try_decrypt decrypted") { expect(ManageIQ::Password.try_decrypt(pass)).to eq(pass) }
+      it(".try_decrypt plaintext") { expect(ManageIQ::Password.try_decrypt(pass)).to eq(pass) }
 
       it(".recrypt") { expect(ManageIQ::Password.recrypt(enc)).to     eq(enc) }
       it("#recrypt") { expect(ManageIQ::Password.new.recrypt(enc)).to eq(enc) }
 
       %w[DB_PASSWORD MiqPassword ManageIQ::Password].each do |pass_method|
-        enc_erb = "<%= #{pass_method}.decrypt(\"#{enc}\") %>"
+        enc_erb  = "<%= #{pass_method}.decrypt(\"#{enc}\") %>"
+        pass_erb = "<%= #{pass_method}.decrypt(\"#{pass}\") %>"
 
         context "erb #{pass_method}" do
           it(".decrypt") { expect(ManageIQ::Password.decrypt(enc_erb)).to     be_decrypted(pass) }
           it("#decrypt") { expect(ManageIQ::Password.new.decrypt(enc_erb)).to be_decrypted(pass) }
+
+          it(".decrypt plaintext") { expect { ManageIQ::Password.decrypt(pass_erb) }.to     raise_error ManageIQ::Password::PasswordError }
+          it("#decrypt plaintext") { expect { ManageIQ::Password.new.decrypt(pass_erb) }.to raise_error ManageIQ::Password::PasswordError }
 
           it(".try_decrypt") { expect(ManageIQ::Password.try_decrypt(enc_erb)).to be_decrypted(pass) }
 
@@ -84,6 +99,10 @@ RSpec.describe ManageIQ::Password do
       expect(ManageIQ::Password.decrypt("v2:{zad43i0dQB+8z45ZYMVmpFcagbt40T0aFddhHlj6YtPgoOJ5N3uBYAp8WwuZ\nQkar}")).to(
         eq("`~!@\#$%^&*()_+-=[]{}\\|;:\"'<>,./?")
       )
+    end
+
+    it "fails on a bad encrypted key" do
+      expect { ManageIQ::Password.decrypt("v2:{55555}") }.to raise_error ManageIQ::Password::PasswordError
     end
   end
 
