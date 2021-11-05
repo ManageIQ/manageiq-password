@@ -88,6 +88,8 @@ RSpec.describe ManageIQ::Password do
           it(".decrypt plaintext") { expect { ManageIQ::Password.decrypt(pass_erb) }.to     raise_error ManageIQ::Password::PasswordError }
           it("#decrypt plaintext") { expect { ManageIQ::Password.new.decrypt(pass_erb) }.to raise_error ManageIQ::Password::PasswordError }
 
+          it(".try_decrypt")           { expect(ManageIQ::Password.try_decrypt(enc_erb)).to  be_decrypted(pass) }
+          it(".try_decrypt plaintext") { expect(ManageIQ::Password.try_decrypt(pass_erb)).to eq(pass) }
 
           it(".encrypted?")           { expect(ManageIQ::Password.encrypted?(enc_erb)).to  be_truthy }
           it(".encrypted? plaintext") { expect(ManageIQ::Password.encrypted?(pass_erb)).to be_falsey }

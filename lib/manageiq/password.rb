@@ -86,6 +86,7 @@ module ManageIQ
     end
 
     def self.try_decrypt(str)
+      str = remove_erb(str)
       encrypted?(str) ? decrypt(str) : str
     end
 
