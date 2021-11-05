@@ -65,8 +65,7 @@ module ManageIQ
     end
 
     def self.encrypted?(str)
-      return false if str.nil? || str.empty?
-      !!unwrap(str)
+      wrapped?(remove_erb(str))
     end
 
     def self.md5crypt(str)
@@ -135,12 +134,15 @@ module ManageIQ
     end
 
     def self.unwrap(str)
-      _unwrap(str) || _unwrap(extract_erb_encrypted_value(str))
+      return str if str.nil? || str.empty?
+
+      remove_erb(str).match(REGEXP_START_LINE)&.public_send(:[], 1)
     end
 
-    private_class_method def self._unwrap(str)
-      return str if str.nil? || str.empty?
-      str.match(REGEXP_START_LINE)&.public_send(:[], 1)
+    def self.wrapped?(str)
+      return false if str.nil? || str.empty?
+
+      str.match?(REGEXP_START_LINE)
     end
 
     def self.store_key_file(filename, key)
@@ -158,8 +160,11 @@ module ManageIQ
       Key.new(*YAML.load_file(filename).values_at(:algorithm, :key, :iv))
     end
 
-    def self.extract_erb_encrypted_value(value)
-      return $1 if value =~ /\A<%= (?:MiqPassword|DB_PASSWORD|ManageIQ::Password)\.decrypt\(['"]([^'"]+)['"]\) %>\Z/
+    def self.remove_erb(str)
+      return str if str.nil? || str.empty? || !str.start_with?("<%=")
+
+      match = str.match(/\A<%= (?:MiqPassword|DB_PASSWORD|ManageIQ::Password)\.decrypt\(['"](.+?)['"]\) %>\Z/m)
+      match ? match[1] : str
     end
 
     class Key
