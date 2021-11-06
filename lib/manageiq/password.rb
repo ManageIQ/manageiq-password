@@ -22,20 +22,32 @@ module ManageIQ
       @encStr = encrypt(str)
     end
 
-    def encrypt(str, key = self.class.key)
+    def encrypt(*args)
+      self.class.encrypt(*args)
+    end
+
+    def decrypt(*args)
+      self.class.decrypt(*args)
+    end
+
+    def recrypt(*args)
+      self.class.recrypt(*args)
+    end
+
+    def self.encrypt(str, key = self.key)
       return str if str.nil?
 
       enc = key.encrypt64(str).delete("\n") unless str.empty?
-      self.class.wrap(enc)
+      wrap(enc)
     end
 
-    def decrypt(str, key = self.class.key)
-      str = self.class.remove_erb(str)
+    def self.decrypt(str, key = self.key)
+      str = remove_erb(str)
       return str if str.nil? || str.empty?
 
-      raise PasswordError, "cannot decrypt plaintext string" unless self.class.wrapped?(str)
+      raise PasswordError, "cannot decrypt plaintext string" unless wrapped?(str)
 
-      enc = self.class.unwrap(str)
+      enc = unwrap(str)
       return enc if enc.nil? || enc.empty?
 
       begin
@@ -45,24 +57,12 @@ module ManageIQ
       end
     end
 
-    def recrypt(str, prior_key = nil)
+    def self.recrypt(str, prior_key = nil)
       return str if str.nil?
 
       decrypted_str   = decrypt(str, prior_key) if prior_key rescue nil
       decrypted_str ||= decrypt(str)
       encrypt(decrypted_str)
-    end
-
-    def self.encrypt(*args)
-      new.encrypt(*args)
-    end
-
-    def self.decrypt(*args)
-      new.decrypt(*args)
-    end
-
-    def self.recrypt(*args)
-      new.recrypt(*args)
     end
 
     def self.encrypted?(str)
@@ -129,29 +129,27 @@ module ManageIQ
       Key.new.tap { |key| store_key_file(filename, key) if filename }
     end
 
-    protected
-
-    def self.wrap(encrypted_str)
+    private_class_method def self.wrap(encrypted_str)
       "v2:{#{encrypted_str}}"
     end
 
-    def self.unwrap(str)
+    private_class_method def self.unwrap(str)
       return str if str.nil? || str.empty?
 
       str.match(REGEXP_START_LINE)&.public_send(:[], 1)
     end
 
-    def self.wrapped?(str)
+    private_class_method def self.wrapped?(str)
       return false if str.nil? || str.empty?
 
       str.match?(REGEXP_START_LINE)
     end
 
-    def self.store_key_file(filename, key)
+    private_class_method def self.store_key_file(filename, key)
       File.write(filename, key.to_h.to_yaml, :perm => 0440)
     end
 
-    def self.load_key_file(filename)
+    private_class_method def self.load_key_file(filename)
       return filename if filename.respond_to?(:decrypt64)
 
       # if it is an absolute path, or relative to pwd, leave as is
@@ -162,7 +160,7 @@ module ManageIQ
       Key.new(*YAML.load_file(filename).values_at(:algorithm, :key, :iv))
     end
 
-    def self.remove_erb(str)
+    private_class_method def self.remove_erb(str)
       return str if str.nil? || str.empty? || !str.start_with?("<%=")
 
       match = str.match(/\A<%= (?:MiqPassword|DB_PASSWORD|ManageIQ::Password)\.decrypt\(['"](.+?)['"]\) %>\Z/m)
