@@ -175,6 +175,9 @@ module ManageIQ
         Base64.strict_encode64(Digest::SHA256.digest("#{password}#{salt}")[0, GENERATED_KEY_SIZE])
       end
 
+      attr_reader :key
+      alias to_s key
+
       def initialize(algorithm = nil, key = nil, iv = nil)
         @algorithm = algorithm || "aes-256-cbc"
         @key       = key || generate_key
@@ -197,10 +200,6 @@ module ManageIQ
 
       def decrypt64(str)
         decrypt(Base64.decode64(str))
-      end
-
-      def to_s
-        @key
       end
 
       def to_h
