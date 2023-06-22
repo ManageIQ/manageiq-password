@@ -259,3 +259,13 @@ RSpec.describe ManageIQ::Password do
     expect(ManageIQ::Password.key).to eq new_key
   end
 end
+
+RSpec.describe ManageIQ::Password::Key do
+  it "#key" do
+    expect(ManageIQ::Password.key.key).to eq "5ysYUd3Qrjj7DDplmEJHmnrFBEPS887JwOQv0jFYq2g="
+  end
+
+  it ".to_s" do
+    expect(ManageIQ::Password.key.to_s).to eq "5ysYUd3Qrjj7DDplmEJHmnrFBEPS887JwOQv0jFYq2g="
+  end
+end
