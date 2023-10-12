@@ -157,7 +157,8 @@ module ManageIQ
       filename = File.expand_path(filename, key_root) unless File.exist?(filename)
       return nil unless File.exist?(filename)
 
-      Key.new(*YAML.load_file(filename).values_at(:algorithm, :key, :iv))
+      # Switch to YAML.safe_load_file when we drop ruby 2.7.  Psych 3.2.1 added it.
+      Key.new(*YAML.safe_load(File.read(filename), :permitted_classes => [Symbol, Time]).values_at(:algorithm, :key, :iv))
     end
 
     private_class_method def self.remove_erb(str)
