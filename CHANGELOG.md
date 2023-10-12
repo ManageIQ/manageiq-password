@@ -4,6 +4,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2023-10-12
+### Added
+- Add Ruby 3.1 support including ruby 3.1's psych 4 default of safe_load [[#37](https://github.com/ManageIQ/manageiq-password/pull/37)]
+
+### Changed
+- Change .to_s to use a regular attr_reader [[#34](https://github.com/ManageIQ/manageiq-password/pull/34)]
+
+### Removed
+- Removed support for Ruby 2.5 and 2.6 [[#37](https://github.com/ManageIQ/manageiq-password/pull/37)]
+
 ## [1.1.0] - 2021-11-08
 ### Added
 - Add manageiq-password CLI [[#23](https://github.com/ManageIQ/manageiq-password/pull/23)]
@@ -22,6 +32,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     key
 - **BREAKING**: Drop deprecated methods [[#16](https://github.com/ManageIQ/manageiq-password/pull/16)]
 
-[Unreleased]: https://github.com/ManageIQ/more_core_extensions/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/ManageIQ/more_core_extensions/compare/v1.1.0...v1.0.0
-[1.0.0]: https://github.com/ManageIQ/more_core_extensions/compare/v1.0.0...v0.3.0
+[Unreleased]: https://github.com/ManageIQ/manageiq-password/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ManageIQ/manageiq-password/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/ManageIQ/manageiq-password/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/ManageIQ/manageiq-password/compare/v0.3.0...v1.0.0
