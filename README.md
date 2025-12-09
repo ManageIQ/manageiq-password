@@ -2,8 +2,6 @@
 
 [![Gem Version](https://badge.fury.io/rb/manageiq-password.svg)](http://badge.fury.io/rb/manageiq-password)
 [![CI](https://github.com/ManageIQ/manageiq-password/actions/workflows/ci.yaml/badge.svg)](https://github.com/ManageIQ/manageiq-password/actions/workflows/ci.yaml)
-[![Code Climate](https://codeclimate.com/github/ManageIQ/manageiq-password.svg)](https://codeclimate.com/github/ManageIQ/manageiq-password)
-[![Test Coverage](https://codeclimate.com/github/ManageIQ/manageiq-password/badges/coverage.svg)](https://codeclimate.com/github/ManageIQ/manageiq-password/coverage)
 
 A simple encryption util for storing passwords in a database.
 
